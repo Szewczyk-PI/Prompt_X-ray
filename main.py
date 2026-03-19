@@ -11,18 +11,18 @@ input2 = """
 """
 path = './Test/'
 with open(path + "Expert-First-Contact-Customer-Assistant-Authorized_User.md", "r", encoding='utf-8') as file:
-    lines = file.readline()
-
-
-print(f"test: {lines}")
+    plik = file.read()
 
 
 # Normalizacja
 input1 = re.sub(r'[\n\t\r]+', ' ', input1)
 input2 = re.sub(r'[\n\t\r]+', ' ', input2)
+plik = re.sub(r'[\n\t\r]+', ' ', plik)
 # Dzielenie
 zdania = re.split(r'(?<=[.!?])\s+', input1)
 zdania2 = re.split(r'(?<=[.!?])\s+', input2)
+plik_end = re.split(r'(?<=[.!?])\s+', plik)
 
-print(f"input 1: {zdania}")
-print(f"Input 2: {zdania2}")
+# print(f"input 1: {zdania}")
+# print(f"Input 2: {zdania2}")
+print(f"Dane z pliku: {plik_end}")
