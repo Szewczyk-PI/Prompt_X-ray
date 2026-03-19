@@ -1,5 +1,7 @@
 import re
 import ollama
+from sklearn.decomposition import PCA
+import numpy as np 
 
 path = './Test/'
 
@@ -16,10 +18,17 @@ batch = ollama.embed(
     model="bge-m3:latest",
     input=plik_end
 )
-#print(len(batch['embeddings'])) 
-# print(f"Dane z pliku ({len(plik_end)} elementów):\n")
-# for i, element in enumerate(plik_end, 1):
-#     print(plik_end)
-for sentenc, vector in zip(plik_end[:10], batch['embeddings'][:10]):
-    print(F"Sentence: {sentenc}")
-    print(f"Vector ({len(vector)} dim): {vector[:3]}...")
+
+embeddings = np.array(batch['embeddings'])
+pca = PCA(n_components=3)
+reduced = pca.fit_transform(embeddings)
+
+# Normalizacja każdej osi do 0-255
+def normalize(arr):
+    return (arr - arr.min()) / (arr.max() - arr.min()) * 255
+
+rgb = normalize(reduced).astype(int)
+for (r, g, b), zdanie in zip(rgb, plik_end):
+    print(f"\033[38;2;{r};{g};{b}m{zdanie}\033[0m")
+
+
