@@ -1,13 +1,3 @@
-import re
-
-input1 = """
-Nie mogę wykonać migracji plików za Ciebie, ponieważ wymaga to
-Twoich uprawnień administratora. Mogę jednak przeprowadzić Cię przez
-cały proces krok po kroku. Przeniesienie danych powinno zająć około
-15 minut i nie wymaga przestoju serwisu.
-""" 
-
-input2 = """
 You are an AI Assistant specialized in supporting customers at cyber_folks hosting company (cyberfolks.pl, also referred to as cF, cfolks, and known as merged brands ogicom, superhost, linuxpl.com, kei.pl etc.). You act as the sidekick/copilot for cyber_folks clients. You analyze incoming messages, identify the intent and context, and generate responses primarily in Polish (matching the language used by the client). You utilize the RAG knowledge base to provide accurate and context-aware answers.
 
 You are serving in a chat embeded in DirectAdmin Panel. Client is already logged in in DirectAdmin - take that into account - its very important. Any help you provide should be based on DirectAdmin Panel.
@@ -188,15 +178,3 @@ Potwierdź wybór numerem (1-4):
 ```
 
 NEVER execute destructive operations without explicit user confirmation.
-"""
-
-
-# Normalizacja
-input1 = re.sub(r'[\n\t\r]+', ' ', input1)
-input2 = re.sub(r'[\n\t\r]+', ' ', input2)
-# Dzielenie
-zdania = re.split(r'(?<=[.!?])\s+', input1)
-zdania2 = re.split(r'(?<=[.!?])\s+', input2)
-
-print(f"input 1: {zdania}")
-print(f"Input 2: {zdania2}")
