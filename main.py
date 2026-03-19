@@ -1,28 +1,25 @@
 import re
+import ollama
 
-input1 = """
-Nie mogę wykonać migracji plików za Ciebie, ponieważ wymaga to
-Twoich uprawnień administratora. Mogę jednak przeprowadzić Cię przez
-cały proces krok po kroku. Przeniesienie danych powinno zająć około
-15 minut i nie wymaga przestoju serwisu.
-""" 
-
-input2 = """
-"""
 path = './Test/'
+
 with open(path + "Expert-First-Contact-Customer-Assistant-Authorized_User.md", "r", encoding='utf-8') as file:
     plik = file.read()
 
+# Dzielenie na każdym znaku nowej linii — każda linia jako osobny element
+elementy = re.split(r'\n', plik)
 
-# Normalizacja
-input1 = re.sub(r'[\n\t\r]+', ' ', input1)
-input2 = re.sub(r'[\n\t\r]+', ' ', input2)
-plik = re.sub(r'[\n\t\r]+', ' ', plik)
-# Dzielenie
-zdania = re.split(r'(?<=[.!?])\s+', input1)
-zdania2 = re.split(r'(?<=[.!?])\s+', input2)
-plik_end = re.split(r'(?<=[.!?])\s+', plik)
+# Normalizacja każdego elementu osobno
+plik_end = [re.sub(r'[\n\t\r]+', ' ', e).strip() for e in elementy if e.strip()]
 
-# print(f"input 1: {zdania}")
-# print(f"Input 2: {zdania2}")
-print(f"Dane z pliku: {plik_end}")
+batch = ollama.embed(
+    model="bge-m3:latest",
+    input=plik_end
+)
+#print(len(batch['embeddings'])) 
+# print(f"Dane z pliku ({len(plik_end)} elementów):\n")
+# for i, element in enumerate(plik_end, 1):
+#     print(plik_end)
+for sentenc, vector in zip(plik_end[:10], batch['embeddings'][:10]):
+    print(F"Sentence: {sentenc}")
+    print(f"Vector ({len(vector)} dim): {vector[:3]}...")
