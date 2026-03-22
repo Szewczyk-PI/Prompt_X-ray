@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Prompt X-ray</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: monospace; background: #111; color: #eee; padding: 20px; }
+    h1 { margin-bottom: 20px; font-size: 18px; color: #aaa; }
+    .inputs { display: flex; gap: 10px; margin-bottom: 10px; }
+    textarea {
+      flex: 1; height: 150px; background: #1e1e1e; color: #eee;
+      border: 1px solid #333; padding: 10px; font-family: monospace; font-size: 13px;
+      resize: vertical;
+    }
+    button {
+      display: block; width: 100%; padding: 10px;
+      background: #333; color: #eee; border: 1px solid #555;
+      font-size: 14px; cursor: pointer; margin-bottom: 20px;
+    }
+    button:hover { background: #444; }
+    .output { display: flex; gap: 10px; }
+    .column { flex: 1; }
+    .column h2 { font-size: 13px; color: #666; margin-bottom: 8px; }
+    .sentence {
+      padding: 4px 6px; margin-bottom: 4px;
+      font-size: 13px; line-height: 1.5; border-radius: 3px;
+      background: #1a1a1a;
+    }
+    .error { color: #f55; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Prompt X-ray</h1>
+  <div class="inputs">
+    <textarea id="doc1" placeholder="Doc 1..."></textarea>
+    <textarea id="doc2" placeholder="Doc 2..."></textarea>
+  </div>
+  <button onclick="compare()">Porównaj</button>
+  <div class="output">
+    <div class="column">
+      <h2>Doc 1</h2>
+      <div id="out1"></div>
+    </div>
+    <div class="column">
+      <h2>Doc 2</h2>
+      <div id="out2"></div>
+    </div>
+  </div>
+  <div id="error" class="error"></div>
+
+  <script>
+    async function compare() {
+      const doc1 = document.getElementById('doc1').value;
+      const doc2 = document.getElementById('doc2').value;
+      document.getElementById('error').textContent = '';
+
+      try {
+        const res = await fetch('http://127.0.0.1:8000/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ doc1, doc2 })
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        render('out1', data.doc1);
+        render('out2', data.doc2);
+      } catch (e) {
+        document.getElementById('error').textContent = 'Błąd: ' + e.message;
+      }
+    }
+
+    function render(id, sentences) {
+      const el = document.getElementById(id);
+      el.innerHTML = sentences.map(s =>
+        `<div class="sentence" style="color: ${s.color}">${s.text}</div>`
+      ).join('');
+    }
+  </script>
+</body>
+</html>
