@@ -1,6 +1,8 @@
 services:
   api:
     build: .
+    ports:
+      - "127.0.0.1:8000:8000"
     environment:
       - OLLAMA_HOST=http://ollama:11434
     depends_on:
@@ -10,17 +12,6 @@ services:
     image: ollama/ollama
     volumes:
       - ollama_data:/root/.ollama
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    depends_on:
-      - api
 
 volumes:
   ollama_data:
