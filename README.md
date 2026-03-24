@@ -9,13 +9,13 @@ Narzędzie do wizualizacji semantycznych powiązań między dwoma dokumentami lu
 3. Wektory są redukowane do 3 wymiarów przez PCA i mapowane na kolory RGB.
 4. Ponieważ oba dokumenty przetwarzane są we wspólnej skali, semantycznie podobne fragmenty lądują blisko siebie w przestrzeni i dostają zbliżone kolory.
 
-## Wymagania
+## Uruchomienie lokalne
+
+### Wymagania
 
 - Python 3.14+
-- [uv](https://github.com/astral-sh/uv) (menadżer pakietów)
-- [Ollama](https://ollama.com) uruchomiony lokalnie z załadowanym modelem `bge-m3`
-
-## Instalacja i uruchomienie
+- [uv](https://github.com/astral-sh/uv)
+- [Ollama](https://ollama.com) uruchomiony lokalnie
 
 ```bash
 # Pobierz model embeddingowy (jednorazowo)
@@ -30,7 +30,78 @@ uvicorn main:app --reload
 
 Serwer startuje pod adresem `http://127.0.0.1:8000`.
 
-Otwórz `index.html` w przeglądarce, wklej dwa dokumenty i kliknij **Porównaj**.
+## Uruchomienie przez Docker
+
+### Wymagania
+
+- Docker
+
+```bash
+# Wystartuj kontenery
+docker compose up -d --build
+
+# Pobierz model (jednorazowo, ~1.5 GB)
+docker compose exec ollama ollama pull bge-m3:latest
+```
+
+Otwórz `http://localhost:8000` w przeglądarce.
+
+## Deploy na VPS
+
+### Wymagania na serwerze
+
+- Docker
+- Nginx (host)
+- Certbot
+- Otwarte porty: 80, 443
+
+```bash
+# 1. Sklonuj repo
+git clone -b docker https://github.com/Szewczyk-PI/Prompt_X-ray.git ~/prompt-xray
+cd ~/prompt-xray
+
+# 2. Pobierz certyfikat SSL
+certbot certonly --standalone -d twoja-domena.pl \
+  --pre-hook "systemctl stop nginx" \
+  --post-hook "systemctl start nginx"
+
+# 3. Dodaj config nginx (patrz niżej)
+
+# 4. Wystartuj kontenery
+docker compose up -d --build
+
+# 5. Pobierz model
+docker compose exec ollama ollama pull bge-m3:latest
+```
+
+### Config nginx (`/etc/nginx/sites-available/twoja-domena.pl`)
+
+```nginx
+server {
+    listen 80;
+    server_name twoja-domena.pl;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name twoja-domena.pl;
+
+    ssl_certificate /etc/letsencrypt/live/twoja-domena.pl/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/twoja-domena.pl/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/twoja-domena.pl /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
 
 ## API
 
@@ -61,3 +132,5 @@ Odpowiedź:
 | Redukcja    | PCA (scikit-learn)                  |
 | Frontend    | Vanilla JS / HTML / CSS             |
 | Pakiety     | uv                                  |
+| Container   | Docker + Docker Compose             |
+| Reverse proxy | Nginx                             |
